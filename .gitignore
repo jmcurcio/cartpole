@@ -1,0 +1,7 @@
+/videos/*
+*.mp4
+*.avi
+*.h5
+*.pth
+__pycache__/
+.DS_Store
