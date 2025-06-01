@@ -1,1 +1,7 @@
-
+gymnasium
+gymnasium[classic-control]
+torch
+numpy<2
+pyyaml 
+matplotlib
+moviepy
