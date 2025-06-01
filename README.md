@@ -1,6 +1,6 @@
 # CartPole Agents
 
-This project implements random and DQN agents for the OpenAI Gymnasium CartPole-v1 environment, with a modular structure for future research and development.
+This project implements random, DQN, and REINFORCE agents for the OpenAI Gymnasium CartPole-v1 environment.
 
 ## Structure
 
