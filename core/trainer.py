@@ -1,6 +1,5 @@
 import torch
 import numpy as np
-from utils.video import wrap_env_for_video
 
 class Trainer:
     def __init__(self, env, agent, buffer, config):
@@ -9,7 +8,7 @@ class Trainer:
         self.buffer = buffer
         self.config = config
 
-    def train(self, logger=None, video_episodes=None, agent_name="agent"):
+    def train_dqn(self, logger=None):
         num_episodes = self.config.get('num_episodes', 500)
         batch_size = self.config['batch_size']
         target_update_freq = self.config['target_update_freq']
@@ -17,17 +16,13 @@ class Trainer:
         rewards = []
 
         for episode in range(num_episodes):
-            # Video logic
-            env_to_use, recording = (self.env, False)
-            if video_episodes is not None:
-                env_to_use, recording = wrap_env_for_video(self.env, video_episodes, episode, agent_name)
-            state, _ = env_to_use.reset()
+            state, _ = self.env.reset()
             episode_reward = 0
             done = False
 
             while not done:
                 action = self.agent.select_action(state)
-                next_state, reward, terminated, truncated, _ = env_to_use.step(action)
+                next_state, reward, terminated, truncated, _ = self.env.step(action)
                 self.buffer.push(state, action, reward, next_state, done)
                 state = next_state
                 episode_reward += reward
@@ -57,8 +52,28 @@ class Trainer:
                 logger.info(msg)
             else:
                 print(msg)
-            # Close video recorder if used
-            if recording and hasattr(env_to_use, "close_video_recorder"):
-                env_to_use.close_video_recorder()
+        return rewards
 
-        return rewards 
+    def train_reinforce(self, logger=None):
+        num_episodes = self.config.get('num_episodes', 500)
+        rewards = []
+
+        for episode in range(num_episodes):
+            state, _ = self.env.reset()
+            done = False
+            episode_reward = 0
+
+            while not done:
+                action = self.agent.select_action(state)
+                next_state, reward, terminated, truncated, _ = self.env.step(action)
+                self.agent.store_reward(reward)
+                state = next_state
+                episode_reward += reward
+                done = terminated or truncated
+
+            self.agent.update()
+            rewards.append(episode_reward)
+            logger.info(f"Episode {episode + 1}/{num_episodes}, Reward: {episode_reward}")
+
+        logger.info("REINFORCE training finished.")
+        return rewards
