@@ -14,9 +14,9 @@ This project implements random and DQN agents for the OpenAI Gymnasium CartPole-
 ## Getting Started
 
 1. Install dependencies:
-    ```
-    pip install -r requirements.txt
-    ```
+```
+pip install -r requirements.txt
+```
 
 ## Extending
 
@@ -25,20 +25,20 @@ Add new agents to `agents/`.
 # Usage
 
 Run any agent with: 
-'''
+```
 python -m cartpole.experiments.run_experiment --agent <agent_name> --config <config_path> [--env <env_id>]
-'''
+```
 
 Examples:
-'''sh
+```sh
 python -m cartpole.experiments.run_experiment --agent dqn --config configs/dqn_config.yaml
-'''
-'''sh
+```
+```sh
 python -m cartpole.experiments.run_experiment --agent reinforce --config configs/reinforce_config.yaml
-'''
-'''sh
+```
+```sh
 python -m cartpole.experiments.run_experiment --agent random --config configs/dqn_config.yaml
-'''
+```
 
 ## Video Recording
 
