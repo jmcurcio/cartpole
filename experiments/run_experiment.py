@@ -1,3 +1,6 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 import gymnasium as gym
 import yaml
 import argparse
@@ -27,14 +30,13 @@ def main():
     parser.add_argument("--config", type=str, required=True, help="Path to config YAML")
     parser.add_argument("--env", type=str, default="CartPole-v1", help="Gymnasium environment ID")
     parser.add_argument("--show_plot", action="store_true", help="Show plot after training")
-    parser.add_argument("--video_dir", type=str, default="videos", help="Directory to save videos")
     parser.add_argument("--video_episodes", type=str, default="0,-1", help="Comma-separated list of episode indices to record (e.g., 0,249,499)")
     args = parser.parse_args()
 
     logger = get_logger(f"{args.agent}_{args.env}")
     logger.info(f"Starting experiment with agent: {args.agent}, env: {args.env}, config: {args.config}")
 
-    env = gym.make(args.env)
+    env = gym.make(args.env, render_mode="rgb_array")
     with open(args.config) as f:
         config = yaml.safe_load(f)
     agent = get_agent(args.agent, env, config)
@@ -45,17 +47,27 @@ def main():
     raw_indices = [int(x) for x in args.video_episodes.split(",") if x.strip() != ""]
     episode_indices = set([i if i >= 0 else num_episodes + i for i in raw_indices])
 
+    def should_record(episode):
+        return episode in episode_indices
+
+    video_folder = os.path.join('videos', args.agent)
+    os.makedirs(video_folder, exist_ok=True)
+    env = gym.wrappers.RecordVideo(
+        env,
+        video_folder=video_folder,
+        episode_trigger=should_record,
+        name_prefix=f"{args.agent}"
+    )
+
     rewards = []
     if args.agent == "reinforce":
         for episode in range(num_episodes):
-            # Video logic
-            env_to_use, recording = wrap_env_for_video(env, args.video_dir, episode_indices, episode, args.agent)
-            state, _ = env_to_use.reset()
+            state, _ = env.reset()
             done = False
             episode_reward = 0
             while not done:
                 action = agent.select_action(state)
-                next_state, reward, terminated, truncated, _ = env_to_use.step(action)
+                next_state, reward, terminated, truncated, _ = env.step(action)
                 agent.store_reward(reward)
                 state = next_state
                 episode_reward += reward
@@ -63,16 +75,16 @@ def main():
             agent.update()
             rewards.append(episode_reward)
             logger.info(f"Episode {episode+1}/{num_episodes}, Reward: {episode_reward}")
-            # Close video recorder if used
-            if recording and hasattr(env_to_use, "close_video_recorder"):
-                env_to_use.close_video_recorder()
         logger.info("Training finished.")
+        if hasattr(env, "close"):
+            env.close()
     else:
         buffer = ReplayBuffer(config.get('buffer_size', 10000))
         trainer = Trainer(env, agent, buffer, config)
-        rewards = trainer.train(logger=logger, video_dir=args.video_dir, video_episodes=episode_indices, agent_name=args.agent)
+        rewards = trainer.train(logger=logger, video_episodes=episode_indices, agent_name=args.agent)
 
     plot_rewards(rewards, show=args.show_plot)
+    env.close()
 
 if __name__ == "__main__":
     main() 

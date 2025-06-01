@@ -18,6 +18,8 @@ This project implements random and DQN agents for the OpenAI Gymnasium CartPole-
 pip install -r requirements.txt
 ```
 
+> **Note:** You do not need to install this project as a package or use `setup.py` for local development. All experiments can be run directly from the command line.
+
 ## Extending
 
 Add new agents to `agents/`.
@@ -26,18 +28,18 @@ Add new agents to `agents/`.
 
 Run any agent with: 
 ```
-python -m cartpole.experiments.run_experiment --agent <agent_name> --config <config_path> [--env <env_id>]
+python experiments/run_experiment.py --agent <agent_name> --config <config_path> [--env <env_id>]
 ```
 
 Examples:
 ```sh
-python -m cartpole.experiments.run_experiment --agent dqn --config configs/dqn_config.yaml
+python experiments/run_experiment.py --agent dqn --config configs/dqn_config.yaml
 ```
 ```sh
-python -m cartpole.experiments.run_experiment --agent reinforce --config configs/reinforce_config.yaml
+python experiments/run_experiment.py --agent reinforce --config configs/reinforce_config.yaml
 ```
 ```sh
-python -m cartpole.experiments.run_experiment --agent random --config configs/dqn_config.yaml
+python experiments/run_experiment.py --agent random --config configs/dqn_config.yaml
 ```
 
 ## Video Recording
@@ -45,7 +47,7 @@ python -m cartpole.experiments.run_experiment --agent random --config configs/dq
 To record videos of the agent at the beginning, middle, and end of training, use:
 
 ```sh
-python -m cartpole.experiments.run_experiment --agent dqn --config configs/dqn_config.yaml --video_episodes 0,249,499 --show_plot
+python experiments/run_experiment.py --agent dqn --config configs/dqn_config.yaml --video_episodes 0,249,499 --show_plot
 ```
 
 - Videos will be saved in the `videos/` directory by default.

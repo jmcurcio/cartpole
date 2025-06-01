@@ -9,7 +9,7 @@ class Trainer:
         self.buffer = buffer
         self.config = config
 
-    def train(self, logger=None, video_dir=None, video_episodes=None, agent_name="agent"):
+    def train(self, logger=None, video_episodes=None, agent_name="agent"):
         num_episodes = self.config.get('num_episodes', 500)
         batch_size = self.config['batch_size']
         target_update_freq = self.config['target_update_freq']
@@ -19,8 +19,8 @@ class Trainer:
         for episode in range(num_episodes):
             # Video logic
             env_to_use, recording = (self.env, False)
-            if video_dir is not None and video_episodes is not None:
-                env_to_use, recording = wrap_env_for_video(self.env, video_dir, video_episodes, episode, agent_name)
+            if video_episodes is not None:
+                env_to_use, recording = wrap_env_for_video(self.env, video_episodes, episode, agent_name)
             state, _ = env_to_use.reset()
             episode_reward = 0
             done = False
@@ -47,7 +47,12 @@ class Trainer:
                 self.agent.update_target()
 
             rewards.append(episode_reward)
-            msg = f"Episode {episode+1}/{num_episodes}, Reward: {episode_reward}, Epsilon: {getattr(self.agent, 'epsilon', 'N/A'):.3f}"
+            epsilon = getattr(self.agent, 'epsilon', None)
+            if epsilon is not None:
+                epsilon_str = f"{epsilon:.3f}"
+            else:
+                epsilon_str = "N/A"
+            msg = f"Episode {episode+1}/{num_episodes}, Reward: {episode_reward}, Epsilon: {epsilon_str}"
             if logger:
                 logger.info(msg)
             else:

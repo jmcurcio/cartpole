@@ -1,6 +1,7 @@
 gymnasium
+gymnasium[classic-control]
 torch
-numpy
+numpy<2
 pyyaml 
 matplotlib
 moviepy
